@@ -48,3 +48,7 @@ npx serve
 🔐Smart contract to record verification
 
 💻Frontend integration with MetaMask
+
+⚠️ This project is for educational purpose. Redistribution is strictly prohibited without permission.
+©️ 2025 Sneha Shanbhag. All rights are reseverd.
+
