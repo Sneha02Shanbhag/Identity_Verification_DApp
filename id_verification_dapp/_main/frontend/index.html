@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <title>Identity Verification DApp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-5xl font-extrabold text-center text-purple-700 mb-12 drop-shadow-lg">Identity Verification DApp</h1>
+
+    <!-- Tab Buttons -->
+    <div class="flex justify-center space-x-6 mb-10">
+      <button onclick="showTab('home')" id="tab-home" class="tab-btn bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded shadow hover:from-pink-600 hover:to-purple-600 transition">Home</button>
+      <button onclick="showTab('userDashboard')" id="tab-userDashboard" class="tab-btn bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 transition">User Dashboard</button>
+      <button onclick="showTab('adminDashboard')" id="tab-adminDashboard" class="tab-btn bg-green-600 text-white px-6 py-2 rounded shadow hover:bg-green-700 transition">Admin Dashboard</button>
+      <button onclick="showTab('history')" id="tab-history" class="tab-btn bg-yellow-600 text-white px-6 py-2 rounded shadow hover:bg-yellow-700 transition">History</button>
+    </div>
+
+   <!-- Home Tab -->
+<div id="home" class="tab-content bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300
+  border-4 border-gray-400 rounded-xl p-16 shadow-xl text-gray-800 flex flex-col items-center justify-center min-h-[350px] max-w-4xl mx-auto text-center">
+
+  <h2 class="text-5xl font-extrabold mb-6 text-gray-900 drop-shadow-md tracking-wide">Welcome to Identity Verification DApp</h2>
+
+  <p class="max-w-xl text-center text-base mb-10 leading-relaxed font-medium">
+    Securely verify your identity on the blockchain. Navigate to <span class="font-semibold underline decoration-purple-500 decoration-2 underline-offset-4">User Dashboard</span> to register your identity,
+    <span class="font-semibold underline decoration-green-500 decoration-2 underline-offset-4">Admin Dashboard</span> to verify users, or check your uploads in the <span class="font-semibold underline decoration-yellow-500 decoration-2 underline-offset-4">History</span> tab.
+  </p>
+
+  <button onclick="showTab('userDashboard')" 
+          class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:from-indigo-700 hover:to-purple-600 transition duration-300">
+    Get Started &rarr;
+  </button>
+</div>
+
+
+
+    <!-- User Dashboard -->
+    <div id="userDashboard" class="tab-content hidden bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-semibold text-blue-600 mb-4">User Dashboard</h2>
+
+      <button onclick="connectWallet()" class="mb-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded">Connect Wallet</button>
+      <p id="walletAddress" class="text-sm text-gray-700 mb-4">Wallet not connected</p>
+
+      <form onsubmit="event.preventDefault(); registerUser();" class="space-y-4">
+        <div>
+          <label class="block text-gray-700">Name:</label>
+          <input type="text" id="name" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block text-gray-700">Date of Birth:</label>
+          <input type="date" id="dob" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block text-gray-700">Upload Document (ID):</label>
+          <input type="file" id="document" class="w-full" required />
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Register</button>
+      </form>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="tab-content hidden bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-semibold text-green-600 mb-4">Admin Dashboard</h2>
+
+      <div class="mb-4">
+        <label class="block text-gray-700">User Address to Verify:</label>
+        <input type="text" id="verifyAddress" class="w-full border rounded px-3 py-2" />
+        <button onclick="verifyUser()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Verify User</button>
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Check Verification Status:</label>
+        <input type="text" id="checkAddress" class="w-full border rounded px-3 py-2" />
+        <button onclick="checkStatus()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Check Status</button>
+        <p id="status" class="mt-2 text-lg font-medium"></p>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab-content hidden bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-semibold text-yellow-600 mb-4">Uploaded Documents History</h2>
+      <div id="historyList" class="space-y-4 max-h-96 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <script>
+    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const abi = [
+      {
+        "inputs": [{ "internalType": "address", "name": "_user", "type": "address" }],
+        "name": "getStatus",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "bytes32", "name": "_docHash", "type": "bytes32" }],
+        "name": "register",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "name": "users",
+        "outputs": [
+          { "internalType": "bytes32", "name": "docHash", "type": "bytes32" },
+          { "internalType": "bool", "name": "isVerified", "type": "bool" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "address", "name": "_user", "type": "address" }],
+        "name": "verify",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
+
+    let provider, signer, contract;
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('ring', 'ring-4', 'ring-purple-500'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.add('ring', 'ring-4', 'ring-purple-500');
+      if(tabId === 'history') loadHistory();
+    }
+
+    async function connectWallet() {
+      try {
+        if (!window.ethereum) {
+          alert("MetaMask not detected. Please install it.");
+          return;
+        }
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        contract = new ethers.Contract(contractAddress, abi, signer);
+        const address = await signer.getAddress();
+        document.getElementById('walletAddress').innerText = `Connected: ${address}`;
+      } catch (error) {
+        console.error("Wallet connection error:", error);
+        alert("Could not connect wallet. Check MetaMask permissions.");
+      }
+    }
+
+    async function registerUser() {
+      const name = document.getElementById('name').value.trim();
+      const dob = document.getElementById('dob').value;
+      const file = document.getElementById('document').files[0];
+      if (!file) {
+        alert("Please select a document file to upload.");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("dob", dob);
+      formData.append("document", file);
+
+      try {
+        const response = await fetch("http://localhost:5000/verify-document", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        if (result.verified) {
+          alert("✅ " + (result.message || "Identity verified! Registering on blockchain..."));
+
+          const fileBuffer = await file.arrayBuffer();
+          const fileHash = ethers.utils.sha256(new Uint8Array(fileBuffer));
+          const combinedHash = ethers.utils.id(name + dob + fileHash);
+
+          const tx = await contract.register(combinedHash);
+          await tx.wait();
+          alert("✅ Identity Registered on Blockchain!");
+
+          saveUploadToLocal(name, dob, file.name, combinedHash);
+        } else {
+          alert("❌ Verification failed: " + (result.message || "Name not found in document."));
+        }
+      } catch (error) {
+        console.error("Registration error:", error);
+        alert("Error verifying document. Make sure backend server is running.");
+      }
+    }
+
+    async function verifyUser() {
+      const addr = document.getElementById('verifyAddress').value;
+      try {
+        const tx = await contract.verify(addr);
+        await tx.wait();
+        alert("User verified successfully!");
+      } catch (error) {
+        console.error("Verification error:", error);
+        alert("Error verifying user. Check the address and try again.");
+      }
+    }
+
+    async function checkStatus() {
+      const addr = document.getElementById('checkAddress').value;
+      try {
+        const status = await contract.getStatus(addr);
+        document.getElementById('status').innerText = status ? "✅ Verified" : "❌ Not Verified";
+      } catch (error) {
+        console.error("Status check error:", error);
+        alert("Error checking verification status. Check the address.");
+      }
+    }
+
+    function saveUploadToLocal(name, dob, filename, docHash) {
+      const uploads = JSON.parse(localStorage.getItem('uploads') || '[]');
+      uploads.push({ name, dob, filename, docHash, timestamp: new Date().toLocaleString() });
+      localStorage.setItem('uploads', JSON.stringify(uploads));
+    }
+
+    function loadHistory() {
+      const uploads = JSON.parse(localStorage.getItem('uploads') || '[]');
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = "";
+
+      if (uploads.length === 0) {
+        historyList.innerHTML = `<p class="text-gray-600">No uploads found.</p>`;
+        return;
+      }
+
+      uploads.forEach(({ name, dob, filename, docHash, timestamp }) => {
+        const card = document.createElement('div');
+        card.className = "p-4 border rounded shadow hover:shadow-lg transition bg-yellow-50";
+
+        card.innerHTML = `
+          <p><strong>User:</strong> ${name}</p>
+          <p><strong>Date of Birth:</strong> ${dob}</p>
+          <p><strong>File:</strong> ${filename}</p>
+          <p><strong>Document Hash:</strong> <code class="break-words">${docHash}</code></p>
+          <p class="text-sm text-gray-500">Uploaded at: ${timestamp}</p>
+        `;
+
+        historyList.appendChild(card);
+      });
+    }
+
+    // Show home tab by default on page load
+    showTab('home');
+  </script>
+</body>
+</html>
