@@ -18,8 +18,8 @@ A decentralized application (DApp) that enables identity verification through sm
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Sneha02Shanbhag/Identity_Verification_DApp-using-Blockchain.git
-cd Identity_Verification_DApp-using-Blockchain
+git clone https://github.com/Sneha02Shanbhag/Identity_Verification_DApp.git
+cd Identity_Verification_DApp
 
 # 2. Install dependencies
 npm install
