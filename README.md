@@ -36,3 +36,15 @@ node server.js
 # 5. Start frontend (if applicable)
 # Use VS Code Live Server or serve with any HTTP server
 npx serve
+```
+🔐 Features:
+
+🔘Register user with name and date of birth
+
+📁Upload identity documents
+
+✅Admin dashboard to verify users
+
+🔐Smart contract to record verification
+
+💻Frontend integration with MetaMask
