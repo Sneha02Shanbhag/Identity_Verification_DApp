@@ -5,7 +5,7 @@ A decentralized application (DApp) that enables identity verification through sm
 ---
 
 ⚠️ This project is for educational purpose. Redistribution is strictly prohibited without permission.
--©️ 2025 Sneha Shanbhag. All rights are reseverd.
+## ©️ 2025 Sneha Shanbhag. All rights are reseverd.
 
 
 ## 🧱 Tech Stack
